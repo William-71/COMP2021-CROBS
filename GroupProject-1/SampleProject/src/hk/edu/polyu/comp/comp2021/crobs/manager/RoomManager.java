@@ -7,10 +7,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Placeholder for Member B — room management (REQ7–REQ9, REQ15–REQ16).
- */
 public class RoomManager {
+
+    public static final String ERR_ROOM_NOT_FOUND = "Error: Room not found.";
+
     private final Map<String, Room> rooms;
     private int nextRoomNumber;
 
@@ -24,17 +24,33 @@ public class RoomManager {
     }
 
     public boolean hasRoom(String roomId) {
-        return rooms.containsKey(roomId);
+        return roomId != null && rooms.containsKey(roomId);
     }
 
     public List<Room> getAllRooms() {
         return new ArrayList<Room>(rooms.values());
     }
 
-    // ---- Stubs for Member B ----
+    /**
+     * Creates a room with a generated ID (r1, r2, ...). The caller must check admin privilege.
+     *
+     * @throws IllegalArgumentException if the type, capacity or features are invalid
+     */
+    public Room addRoom(String roomType, String capacity, String features) {
+        return addRoom(roomType, Room.parseCapacity(capacity), features);
+    }
 
+    /**
+     * Creates a room with a generated ID (r1, r2, ...). The caller must check admin privilege.
+     *
+     * @throws IllegalArgumentException if the type, capacity or features are invalid
+     */
     public Room addRoom(String roomType, int capacity, String features) {
-        throw new UnsupportedOperationException("Not implemented: addRoom");
+        String roomId = "r" + nextRoomNumber;
+        Room room = new Room(roomId, roomType, capacity, features);
+        nextRoomNumber++;
+        rooms.put(roomId, room);
+        return room;
     }
 
     public Room modifyRoom(String roomId, String field, String newValue) {
@@ -43,5 +59,14 @@ public class RoomManager {
 
     public Room deleteRoom(String roomId) {
         throw new UnsupportedOperationException("Not implemented: deleteRoom");
+    }
+
+    // Throws IllegalArgumentException if the room does not exist
+    public Room requireRoom(String roomId) {
+        Room room = roomId == null ? null : rooms.get(roomId);
+        if (room == null) {
+            throw new IllegalArgumentException(ERR_ROOM_NOT_FOUND);
+        }
+        return room;
     }
 }

@@ -63,6 +63,56 @@ class RoomManagerTest {
     }
 
 
+    @Test
+    void modifyRoomUpdatesEachField() {
+        rm.addRoom("seminarRoom", "30", "whiteboard");
+        rm.modifyRoom("r1", "roomType", "meetingRoom");
+        rm.modifyRoom("r1", "capacity", "12");
+        Room room = rm.modifyRoom("r1", "features", "tv,phone");
+        assertEquals("meetingRoom", room.getRoomType());
+        assertEquals(12, room.getCapacity());
+        assertEquals("tv,phone", room.getFeatures());
+    }
+
+    @Test
+    void modifyRoomRejectsBadInputAndKeepsOldValues() {
+        rm.addRoom("seminarRoom", "30", "whiteboard");
+        assertError(RoomManager.ERR_ROOM_NOT_FOUND, new Executable() {
+            @Override
+            public void execute() {
+                rm.modifyRoom("r9", "capacity", "5");
+            }
+        });
+        assertError(RoomManager.ERR_INVALID_FIELD, new Executable() {
+            @Override
+            public void execute() {
+                rm.modifyRoom("r1", "roomId", "r5");
+            }
+        });
+        assertError(Room.ERR_INVALID_TYPE, new Executable() {
+            @Override
+            public void execute() {
+                rm.modifyRoom("r1", "roomType", "hall");
+            }
+        });
+        assertError(Room.ERR_INVALID_CAPACITY, new Executable() {
+            @Override
+            public void execute() {
+                rm.modifyRoom("r1", "capacity", "0");
+            }
+        });
+        assertError(Room.ERR_INVALID_FEATURES, new Executable() {
+            @Override
+            public void execute() {
+                rm.modifyRoom("r1", "features", "");
+            }
+        });
+        Room room = rm.getRoom("r1");
+        assertEquals("seminarRoom", room.getRoomType());
+        assertEquals(30, room.getCapacity());
+        assertEquals("whiteboard", room.getFeatures());
+    }
+
 
 
 }

@@ -10,6 +10,11 @@ import java.util.Map;
 public class RoomManager {
 
     public static final String ERR_ROOM_NOT_FOUND = "Error: Room not found.";
+    public static final String ERR_INVALID_FIELD = "Error: Invalid field.";
+
+    public static final String FIELD_ROOM_TYPE = "roomType";
+    public static final String FIELD_CAPACITY = "capacity";
+    public static final String FIELD_FEATURES = "features";
 
     private final Map<String, Room> rooms;
     private int nextRoomNumber;
@@ -53,8 +58,24 @@ public class RoomManager {
         return room;
     }
 
+    /**
+     * Modifies one field of a room. The caller must check admin privilege.
+     *
+     * @param field one of {@code roomType}, {@code capacity}, {@code features}
+     * @throws IllegalArgumentException if the room, field or value is invalid
+     */
     public Room modifyRoom(String roomId, String field, String newValue) {
-        throw new UnsupportedOperationException("Not implemented: modifyRoom");
+        Room room = requireRoom(roomId);
+        if (FIELD_ROOM_TYPE.equals(field)) {
+            room.setRoomType(newValue);
+        } else if (FIELD_CAPACITY.equals(field)) {
+            room.setCapacity(Room.parseCapacity(newValue));
+        } else if (FIELD_FEATURES.equals(field)) {
+            room.setFeatures(newValue);
+        } else {
+            throw new IllegalArgumentException(ERR_INVALID_FIELD);
+        }
+        return room;
     }
 
     public Room deleteRoom(String roomId) {

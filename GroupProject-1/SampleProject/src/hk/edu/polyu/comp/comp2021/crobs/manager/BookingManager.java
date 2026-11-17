@@ -122,7 +122,7 @@ public class BookingManager {
 
         String bookingId = nextBookingId();
 
-        Booking booking = new Booking(bookingId, roomId, date, startTime, endTime, purpose, ownerUserId);
+        Booking booking = new Booking(bookingId, ownerUserId, roomId, date, startTime, endTime, purpose);
 
         putBooking(booking);
 

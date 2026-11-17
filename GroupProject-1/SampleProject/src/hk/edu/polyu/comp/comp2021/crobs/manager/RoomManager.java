@@ -78,8 +78,15 @@ public class RoomManager {
         return room;
     }
 
+    /**
+     * Deletes a room. The caller must check admin privilege and cancel the room's future bookings.
+     *
+     * @throws IllegalArgumentException if the room does not exist
+     */
     public Room deleteRoom(String roomId) {
-        throw new UnsupportedOperationException("Not implemented: deleteRoom");
+        Room room = requireRoom(roomId);
+        rooms.remove(roomId);
+        return room;
     }
 
     // Throws IllegalArgumentException if the room does not exist

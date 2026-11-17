@@ -7,6 +7,8 @@ import org.junit.jupiter.api.function.Executable;
 
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -113,6 +115,33 @@ class RoomManagerTest {
         assertEquals("whiteboard", room.getFeatures());
     }
 
+
+    @Test
+    void deleteRoomRemovesItAndIdIsNotReused() {
+        rm.addRoom("meetingRoom", "8", "tv");
+        Room deleted = rm.deleteRoom("r1");
+        assertEquals("r1", deleted.getRoomId());
+        assertFalse(rm.hasRoom("r1"));
+        assertNull(rm.getRoom("r1"));
+        assertEquals("r2", rm.addRoom("meetingRoom", "8", "tv").getRoomId());
+    }
+
+    @Test
+    void deleteUnknownRoomFails() {
+        assertError(RoomManager.ERR_ROOM_NOT_FOUND, new Executable() {
+            @Override
+            public void execute() {
+                rm.deleteRoom("r1");
+            }
+        });
+        assertError(RoomManager.ERR_ROOM_NOT_FOUND, new Executable() {
+            @Override
+            public void execute() {
+                rm.deleteRoom(null);
+            }
+        });
+        assertFalse(rm.hasRoom(null));
+    }
 
 
 }

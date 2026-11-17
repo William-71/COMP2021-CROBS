@@ -118,4 +118,9 @@ public class Room {
     public boolean hasAllFeatures(List<String> required) {
         return features.containsAll(required);
     }
+
+    @Override
+    public String toString() {
+        return roomId + " | type: " + roomType + " | capacity: " + capacity + " | features: " + getFeatures();
+    }
 }

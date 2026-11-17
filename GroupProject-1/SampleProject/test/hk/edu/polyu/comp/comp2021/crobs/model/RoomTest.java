@@ -129,4 +129,10 @@ class RoomTest {
             }
         });
     }
+
+    @Test
+    void toStringDescribesRoom() {
+        Room room = new Room("r3", "meetingRoom", 6, "tv");
+        assertEquals("r3 | type: meetingRoom | capacity: 6 | features: tv", room.toString());
+    }
 }

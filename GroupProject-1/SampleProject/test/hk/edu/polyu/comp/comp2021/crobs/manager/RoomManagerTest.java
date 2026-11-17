@@ -144,4 +144,16 @@ class RoomManagerTest {
     }
 
 
+    @Test
+    void listRoomShowsDetails() {
+        rm.addRoom("computerLab", "40", "pc,projector");
+        assertEquals("r1 | type: computerLab | capacity: 40 | features: pc,projector", rm.listRoom("r1"));
+        assertError(RoomManager.ERR_ROOM_NOT_FOUND, new Executable() {
+            @Override
+            public void execute() {
+                rm.listRoom("r2");
+            }
+        });
+    }
+
 }

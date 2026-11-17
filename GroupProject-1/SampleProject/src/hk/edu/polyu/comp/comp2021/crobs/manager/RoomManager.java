@@ -90,6 +90,11 @@ public class RoomManager {
     }
 
     // Throws IllegalArgumentException if the room does not exist
+    public String listRoom(String roomId) {
+        return requireRoom(roomId).toString();
+    }
+
+    // Throws IllegalArgumentException if the room does not exist
     public Room requireRoom(String roomId) {
         Room room = roomId == null ? null : rooms.get(roomId);
         if (room == null) {

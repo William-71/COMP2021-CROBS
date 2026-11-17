@@ -27,6 +27,7 @@ class RoomTest {
         assertEquals(120, room.getCapacity());
         assertEquals("projector,whiteboard", room.getFeatures());
         assertEquals(Arrays.asList("projector", "whiteboard"), room.getFeatureList());
+        assertEquals(1, room.getIdNumber());
     }
 
     @Test
@@ -128,6 +129,12 @@ class RoomTest {
                 room.getFeatureList().add("tv");
             }
         });
+    }
+
+    @Test
+    void idNumberFallsBackForMalformedId() {
+        assertEquals(12, new Room("r12", "computerLab", 1, "pc").getIdNumber());
+        assertEquals(Integer.MAX_VALUE, new Room("rx", "computerLab", 1, "pc").getIdNumber());
     }
 
     @Test

@@ -5,6 +5,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
 
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -156,4 +157,27 @@ class RoomManagerTest {
         });
     }
 
+
+    @Test
+    void listAllRoomsWhenEmpty() {
+        assertEquals(RoomManager.NO_ROOMS, rm.listAllRooms());
+    }
+
+    @Test
+    void listAllRoomsSortsByNumericId() {
+        for (int i = 1; i <= 11; i++) {
+            rm.addRoom("meetingRoom", String.valueOf(i), "tv");
+        }
+        List<Room> rooms = rm.getAllRooms();
+        assertEquals(11, rooms.size());
+        assertEquals("r2", rooms.get(1).getRoomId());
+        assertEquals("r10", rooms.get(9).getRoomId());
+        assertEquals("r11", rooms.get(10).getRoomId());
+
+        String[] lines = rm.listAllRooms().split(System.lineSeparator());
+        assertEquals(11, lines.length);
+        assertTrue(lines[0].startsWith("r1 |"));
+        assertTrue(lines[1].startsWith("r2 |"));
+        assertTrue(lines[10].startsWith("r11 |"));
+    }
 }

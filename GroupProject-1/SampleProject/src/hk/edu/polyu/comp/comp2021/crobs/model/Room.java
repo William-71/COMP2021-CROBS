@@ -119,6 +119,15 @@ public class Room {
         return features.containsAll(required);
     }
 
+    // Returns the numeric part of the room ID, or Integer.MAX_VALUE if it has none
+    public int getIdNumber() {
+        try {
+            return Integer.parseInt(roomId.substring(1));
+        } catch (RuntimeException e) {
+            return Integer.MAX_VALUE;
+        }
+    }
+
     @Override
     public String toString() {
         return roomId + " | type: " + roomType + " | capacity: " + capacity + " | features: " + getFeatures();

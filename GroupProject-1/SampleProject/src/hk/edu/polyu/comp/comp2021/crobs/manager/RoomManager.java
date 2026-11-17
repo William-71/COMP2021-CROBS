@@ -3,6 +3,8 @@ package hk.edu.polyu.comp.comp2021.crobs.manager;
 import hk.edu.polyu.comp.comp2021.crobs.model.Room;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -11,6 +13,7 @@ public class RoomManager {
 
     public static final String ERR_ROOM_NOT_FOUND = "Error: Room not found.";
     public static final String ERR_INVALID_FIELD = "Error: Invalid field.";
+    public static final String NO_ROOMS = "No rooms.";
 
     public static final String FIELD_ROOM_TYPE = "roomType";
     public static final String FIELD_CAPACITY = "capacity";
@@ -32,8 +35,16 @@ public class RoomManager {
         return roomId != null && rooms.containsKey(roomId);
     }
 
+    // Returns all rooms sorted in ascending order of room ID
     public List<Room> getAllRooms() {
-        return new ArrayList<Room>(rooms.values());
+        List<Room> list = new ArrayList<Room>(rooms.values());
+        Collections.sort(list, new Comparator<Room>() {
+            @Override
+            public int compare(Room a, Room b) {
+                return Integer.compare(a.getIdNumber(), b.getIdNumber());
+            }
+        });
+        return list;
     }
 
     /**
@@ -92,6 +103,22 @@ public class RoomManager {
     // Throws IllegalArgumentException if the room does not exist
     public String listRoom(String roomId) {
         return requireRoom(roomId).toString();
+    }
+
+    // Returns one line per room sorted by room ID, or NO_ROOMS if there are none
+    public String listAllRooms() {
+        List<Room> list = getAllRooms();
+        if (list.isEmpty()) {
+            return NO_ROOMS;
+        }
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < list.size(); i++) {
+            if (i > 0) {
+                sb.append(System.lineSeparator());
+            }
+            sb.append(list.get(i).toString());
+        }
+        return sb.toString();
     }
 
     // Throws IllegalArgumentException if the room does not exist

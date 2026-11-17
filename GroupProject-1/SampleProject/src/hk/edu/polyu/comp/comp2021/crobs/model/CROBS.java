@@ -34,7 +34,7 @@ public class CROBS {
     public CROBS(String htmlPath, String txtPath) {
         this.userManager = new UserManager();
         this.roomManager = new RoomManager();
-        this.bookingManager = new BookingManager();
+        this.bookingManager = new BookingManager(this.roomManager);
         this.logger = new CommandLogger(htmlPath, txtPath);
         this.running = false;
     }

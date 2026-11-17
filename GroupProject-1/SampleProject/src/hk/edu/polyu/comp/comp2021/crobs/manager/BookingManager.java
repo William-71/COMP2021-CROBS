@@ -12,15 +12,20 @@ import java.time.LocalTime;
 import java.time.format.DateTimeParseException;
 
 /**
- * Placeholder for Member C — booking management (REQ10–REQ14, REQ17).
+ * Manages room bookings for REQ10–REQ12 and REQ17.
  * {@link #cancelBookingsByUser(String)} is provided for REQ3 integration.
  */
 public class BookingManager {
     private final Map<String, Booking> bookings;
+    private final RoomManager roomManager;
     private int nextBookingNumber;
 
-    public BookingManager() {
+    public BookingManager(RoomManager roomManager) {
+        if (roomManager == null) {
+            throw new IllegalArgumentException("RoomManager cannot be null.");
+        }
         this.bookings = new HashMap<String, Booking>();
+        this.roomManager = roomManager;
         this.nextBookingNumber = 1;
     }
 
@@ -44,6 +49,7 @@ public class BookingManager {
             || booking.getPurpose() == null) {
             throw new IllegalArgumentException("Booking fields cannot be null.");
         }
+        roomManager.requireRoom(booking.getRoomId());
         validateDateAndTime(booking.getDate(), booking.getStartTime(), booking.getEndTime());
         bookings.put(booking.getBookingId(), booking);
     }
@@ -61,14 +67,15 @@ public class BookingManager {
         if (roomId.trim().isEmpty() || date.trim().isEmpty() || startTime.trim().isEmpty() || endTime.trim().isEmpty()) {
             throw new IllegalArgumentException("Room and time information cannot be blank.");
         }
+        roomManager.requireRoom(roomId);
         validateDateAndTime(date, startTime, endTime);
         return !hasConflict(null, roomId, date, startTime, endTime);
     }
 
     /**
-     * Cancels all bookings owned by the given user (used by {@code removeUser}).
+     * Cancels bookings dated today or later for the specified room. (used by {@code removeUser}).
      *
-     * @param userId owner user ID
+     * @param roomId room whose future bookings should be cancelled
      * @return number of cancelled bookings
      */
     public int cancelBookingsByUser(String userId) {
@@ -138,6 +145,10 @@ public class BookingManager {
             throw new IllegalArgumentException("Booking information cannot be blank.");
         }
 
+        if (!roomManager.hasRoom(roomId)) {
+            throw new IllegalArgumentException(RoomManager.ERR_ROOM_NOT_FOUND);
+        }
+
         validateDateAndTime(date, startTime, endTime);
 
         if (hasConflict(null, roomId, date, startTime, endTime)) {
@@ -174,6 +185,10 @@ public class BookingManager {
 
         if (!requesterUserId.equals(booking.getOwnerUserId())) {
             throw new IllegalArgumentException("You do not own this booking.");
+        }
+
+        if (!roomManager.hasRoom(roomId)) {
+            throw new IllegalArgumentException(RoomManager.ERR_ROOM_NOT_FOUND);
         }
 
         validateDateAndTime(date, startTime, endTime);

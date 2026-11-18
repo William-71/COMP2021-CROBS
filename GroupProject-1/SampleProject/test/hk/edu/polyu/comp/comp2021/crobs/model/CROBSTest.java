@@ -109,6 +109,7 @@ class CROBSTest {
         crobs.processCommand("addUser Alice");
         crobs.processCommand("addUser Bob");
 
+        crobs.getRoomManager().addRoom("meetingRoom", "10", "tv");
         Booking booking = new Booking("b1", "u1", "r1", "2026-01-01", "09:00", "10:00", "meeting");
         crobs.getBookingManager().putBooking(booking);
         assertNotNull(crobs.getBookingManager().getBooking("b1"));

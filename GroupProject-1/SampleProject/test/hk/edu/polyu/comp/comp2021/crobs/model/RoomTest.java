@@ -26,7 +26,6 @@ class RoomTest {
         assertEquals("lectureTheatre", room.getRoomType());
         assertEquals(120, room.getCapacity());
         assertEquals("projector,whiteboard", room.getFeatures());
-        assertEquals(1, room.getIdNumber());
     }
 
     @Test
@@ -69,7 +68,8 @@ class RoomTest {
     @Test
     void parseCapacity() {
         assertEquals(30, Room.parseCapacity("30"));
-        for (final String bad : new String[]{null, "", "0", "-5", "abc", "3.5", "+3", "99999999999"}) {
+        assertEquals(3, Room.parseCapacity("+3"));
+        for (final String bad : new String[]{null, "", "0", "-5", "abc", "3.5", " 3", "99999999999"}) {
             assertError("Error: Invalid capacity.", new Executable() {
                 @Override
                 public void execute() {
@@ -119,12 +119,6 @@ class RoomTest {
         assertTrue(room.hasAllFeatures(required));
         assertFalse(room.hasAllFeatures(Arrays.asList("pc", "tv")));
         assertTrue(room.hasAllFeatures(Collections.<String>emptyList()));
-    }
-
-    @Test
-    void idNumberFallsBackForMalformedId() {
-        assertEquals(12, new Room("r12", "computerLab", 1, "pc").getIdNumber());
-        assertEquals(Integer.MAX_VALUE, new Room("rx", "computerLab", 1, "pc").getIdNumber());
     }
 
     @Test

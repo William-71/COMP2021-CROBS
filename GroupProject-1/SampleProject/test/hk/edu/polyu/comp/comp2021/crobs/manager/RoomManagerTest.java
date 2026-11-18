@@ -32,7 +32,7 @@ class RoomManagerTest {
     @Test
     void addRoomGeneratesSequentialIds() {
         Room r1 = rm.addRoom("lectureTheatre", "100", "projector,mic");
-        Room r2 = rm.addRoom("computerLab", 40, "pc");
+        Room r2 = rm.addRoom("computerLab", "40", "pc");
         assertEquals("r1", r1.getRoomId());
         assertEquals("r2", r2.getRoomId());
         assertEquals(100, r1.getCapacity());

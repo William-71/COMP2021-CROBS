@@ -40,9 +40,6 @@ public class Room {
      * @return the capacity
      */
     public static int parseCapacity(String capacity) {
-        if (capacity == null || !capacity.matches("\\d+")) {
-            throw new IllegalArgumentException(ERR_INVALID_CAPACITY);
-        }
         int value;
         try {
             value = Integer.parseInt(capacity);
@@ -60,7 +57,7 @@ public class Room {
      * @return the features without duplicates
      */
     public static List<String> parseFeatures(String features) {
-        if (features == null || features.isEmpty() || !features.matches("[^\\s,]+(,[^\\s,]+)*")) {
+        if (features == null || !features.matches("[^\\s,]+(,[^\\s,]+)*")) {
             throw new IllegalArgumentException(ERR_INVALID_FEATURES);
         }
         List<String> result = new ArrayList<String>();
@@ -90,7 +87,7 @@ public class Room {
      * @param roomType lectureTheatre, computerLab, seminarRoom or meetingRoom
      */
     public void setRoomType(String roomType) {
-        if (roomType == null || !ROOM_TYPES.contains(roomType)) {
+        if (!ROOM_TYPES.contains(roomType)) {
             throw new IllegalArgumentException(ERR_INVALID_TYPE);
         }
         this.roomType = roomType;
@@ -140,17 +137,6 @@ public class Room {
      */
     public boolean hasAllFeatures(List<String> required) {
         return features.containsAll(required);
-    }
-
-    /**
-     * @return the number in the room ID, or Integer.MAX_VALUE if none
-     */
-    public int getIdNumber() {
-        try {
-            return Integer.parseInt(roomId.substring(1));
-        } catch (RuntimeException e) {
-            return Integer.MAX_VALUE;
-        }
     }
 
     /**

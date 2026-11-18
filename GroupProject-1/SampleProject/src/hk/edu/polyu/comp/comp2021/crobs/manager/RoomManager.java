@@ -3,8 +3,7 @@ package hk.edu.polyu.comp.comp2021.crobs.manager;
 import hk.edu.polyu.comp.comp2021.crobs.model.Room;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -35,7 +34,7 @@ public class RoomManager {
      * Creates an empty room manager.
      */
     public RoomManager() {
-        this.rooms = new HashMap<String, Room>();
+        this.rooms = new LinkedHashMap<String, Room>();
         this.nextRoomNumber = 1;
     }
 
@@ -52,16 +51,14 @@ public class RoomManager {
      * @return true if the room exists
      */
     public boolean hasRoom(String roomId) {
-        return roomId != null && rooms.containsKey(roomId);
+        return rooms.containsKey(roomId);
     }
 
     /**
      * @return all rooms sorted by room ID
      */
     public List<Room> getAllRooms() {
-        List<Room> list = new ArrayList<Room>(rooms.values());
-        Collections.sort(list, (a, b) -> Integer.compare(a.getIdNumber(), b.getIdNumber()));
-        return list;
+        return new ArrayList<Room>(rooms.values());
     }
 
     /**
@@ -73,20 +70,8 @@ public class RoomManager {
      * @return the new room
      */
     public Room addRoom(String roomType, String capacity, String features) {
-        return addRoom(roomType, Room.parseCapacity(capacity), features);
-    }
-
-    /**
-     * Caller must check admin privilege.
-     *
-     * @param roomType room type
-     * @param capacity positive capacity
-     * @param features comma-separated, no spaces
-     * @return the new room
-     */
-    public Room addRoom(String roomType, int capacity, String features) {
         String roomId = "r" + nextRoomNumber;
-        Room room = new Room(roomId, roomType, capacity, features);
+        Room room = new Room(roomId, roomType, Room.parseCapacity(capacity), features);
         nextRoomNumber++;
         rooms.put(roomId, room);
         return room;
@@ -157,7 +142,7 @@ public class RoomManager {
      * @return the room
      */
     public Room requireRoom(String roomId) {
-        Room room = roomId == null ? null : rooms.get(roomId);
+        Room room = rooms.get(roomId);
         if (room == null) {
             throw new IllegalArgumentException(ERR_ROOM_NOT_FOUND);
         }

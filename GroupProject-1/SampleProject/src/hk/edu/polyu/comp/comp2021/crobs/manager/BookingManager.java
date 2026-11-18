@@ -17,15 +17,10 @@ import java.time.format.DateTimeParseException;
  */
 public class BookingManager {
     private final Map<String, Booking> bookings;
-    private final RoomManager roomManager;
     private int nextBookingNumber;
 
-    public BookingManager(RoomManager roomManager) {
-        if (roomManager == null) {
-            throw new IllegalArgumentException("RoomManager cannot be null.");
-        }
+    public BookingManager() {
         this.bookings = new HashMap<String, Booking>();
-        this.roomManager = roomManager;
         this.nextBookingNumber = 1;
     }
 
@@ -49,7 +44,6 @@ public class BookingManager {
             || booking.getPurpose() == null) {
             throw new IllegalArgumentException("Booking fields cannot be null.");
         }
-        roomManager.requireRoom(booking.getRoomId());
         validateDateAndTime(booking.getDate(), booking.getStartTime(), booking.getEndTime());
         bookings.put(booking.getBookingId(), booking);
     }
@@ -67,15 +61,14 @@ public class BookingManager {
         if (roomId.trim().isEmpty() || date.trim().isEmpty() || startTime.trim().isEmpty() || endTime.trim().isEmpty()) {
             throw new IllegalArgumentException("Room and time information cannot be blank.");
         }
-        roomManager.requireRoom(roomId);
         validateDateAndTime(date, startTime, endTime);
         return !hasConflict(null, roomId, date, startTime, endTime);
     }
 
     /**
-     * Cancels bookings dated today or later for the specified room. (used by {@code removeUser}).
+     * Cancels bookings dated today or later for the specified user. (used by {@code removeUser}).
      *
-     * @param roomId room whose future bookings should be cancelled
+     * @param userId user whose future bookings should be cancelled
      * @return number of cancelled bookings
      */
     public int cancelBookingsByUser(String userId) {
@@ -98,18 +91,6 @@ public class BookingManager {
      * Cancels all future bookings for a room (used by {@code deleteRoom}).
      * Placeholder: currently removes all bookings for the room.
      */
-    //public int cancelBookingsByRoom(String roomId) {
-    //    int removed = 0;
-    //    Iterator<Map.Entry<String, Booking>> it = bookings.entrySet().iterator();
-    //    while (it.hasNext()) {
-    //        Map.Entry<String, Booking> entry = it.next();
-    //        if (roomId.equals(entry.getValue().getRoomId())) {
-    //            it.remove();
-    //            removed++;
-    //        }
-    //    }
-    //    return removed;
-    //}
     public int cancelBookingsByRoom(String roomId) {// only remove future bookings for the room, preserve past bookings
         if (roomId == null || roomId.trim().isEmpty()) {
             throw new IllegalArgumentException("Room ID cannot be null or blank.");
@@ -143,10 +124,6 @@ public class BookingManager {
         if (roomId.trim().isEmpty() || date.trim().isEmpty() || startTime.trim().isEmpty() 
             || endTime.trim().isEmpty() || purpose.trim().isEmpty() || ownerUserId.trim().isEmpty()) {
             throw new IllegalArgumentException("Booking information cannot be blank.");
-        }
-
-        if (!roomManager.hasRoom(roomId)) {
-            throw new IllegalArgumentException(RoomManager.ERR_ROOM_NOT_FOUND);
         }
 
         validateDateAndTime(date, startTime, endTime);
@@ -186,11 +163,7 @@ public class BookingManager {
         if (!requesterUserId.equals(booking.getOwnerUserId())) {
             throw new IllegalArgumentException("You do not own this booking.");
         }
-
-        if (!roomManager.hasRoom(roomId)) {
-            throw new IllegalArgumentException(RoomManager.ERR_ROOM_NOT_FOUND);
-        }
-
+        
         validateDateAndTime(date, startTime, endTime);
 
         if (hasConflict(bookingId, roomId, date, startTime, endTime)) {

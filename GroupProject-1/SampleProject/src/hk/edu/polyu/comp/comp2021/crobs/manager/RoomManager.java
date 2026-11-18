@@ -4,62 +4,85 @@ import hk.edu.polyu.comp.comp2021.crobs.model.Room;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Stores and manages rooms.
+ */
 public class RoomManager {
 
+    /**
+     * Error for an unknown room ID.
+     */
     public static final String ERR_ROOM_NOT_FOUND = "Error: Room not found.";
-    public static final String ERR_INVALID_FIELD = "Error: Invalid field.";
+
+    /**
+     * Message when there are no rooms.
+     */
     public static final String NO_ROOMS = "No rooms.";
 
-    public static final String FIELD_ROOM_TYPE = "roomType";
-    public static final String FIELD_CAPACITY = "capacity";
-    public static final String FIELD_FEATURES = "features";
+    private static final String ERR_INVALID_FIELD = "Error: Invalid field.";
+    private static final String FIELD_ROOM_TYPE = "roomType";
+    private static final String FIELD_CAPACITY = "capacity";
+    private static final String FIELD_FEATURES = "features";
 
     private final Map<String, Room> rooms;
     private int nextRoomNumber;
 
+    /**
+     * Creates an empty room manager.
+     */
     public RoomManager() {
         this.rooms = new HashMap<String, Room>();
         this.nextRoomNumber = 1;
     }
 
+    /**
+     * @param roomId room ID
+     * @return the room, or null if none
+     */
     public Room getRoom(String roomId) {
         return rooms.get(roomId);
     }
 
+    /**
+     * @param roomId room ID
+     * @return true if the room exists
+     */
     public boolean hasRoom(String roomId) {
         return roomId != null && rooms.containsKey(roomId);
     }
 
-    // Returns all rooms sorted in ascending order of room ID
+    /**
+     * @return all rooms sorted by room ID
+     */
     public List<Room> getAllRooms() {
         List<Room> list = new ArrayList<Room>(rooms.values());
-        Collections.sort(list, new Comparator<Room>() {
-            @Override
-            public int compare(Room a, Room b) {
-                return Integer.compare(a.getIdNumber(), b.getIdNumber());
-            }
-        });
+        Collections.sort(list, (a, b) -> Integer.compare(a.getIdNumber(), b.getIdNumber()));
         return list;
     }
 
     /**
-     * Creates a room with a generated ID (r1, r2, ...). The caller must check admin privilege.
+     * Caller must check admin privilege.
      *
-     * @throws IllegalArgumentException if the type, capacity or features are invalid
+     * @param roomType room type
+     * @param capacity capacity text
+     * @param features comma-separated, no spaces
+     * @return the new room
      */
     public Room addRoom(String roomType, String capacity, String features) {
         return addRoom(roomType, Room.parseCapacity(capacity), features);
     }
 
     /**
-     * Creates a room with a generated ID (r1, r2, ...). The caller must check admin privilege.
+     * Caller must check admin privilege.
      *
-     * @throws IllegalArgumentException if the type, capacity or features are invalid
+     * @param roomType room type
+     * @param capacity positive capacity
+     * @param features comma-separated, no spaces
+     * @return the new room
      */
     public Room addRoom(String roomType, int capacity, String features) {
         String roomId = "r" + nextRoomNumber;
@@ -70,10 +93,12 @@ public class RoomManager {
     }
 
     /**
-     * Modifies one field of a room. The caller must check admin privilege.
+     * Caller must check admin privilege.
      *
-     * @param field one of {@code roomType}, {@code capacity}, {@code features}
-     * @throws IllegalArgumentException if the room, field or value is invalid
+     * @param roomId   room ID
+     * @param field    roomType, capacity or features
+     * @param newValue new value
+     * @return the modified room
      */
     public Room modifyRoom(String roomId, String field, String newValue) {
         Room room = requireRoom(roomId);
@@ -90,9 +115,10 @@ public class RoomManager {
     }
 
     /**
-     * Deletes a room. The caller must check admin privilege and cancel the room's future bookings.
+     * Caller must check admin privilege and cancel the room's future bookings.
      *
-     * @throws IllegalArgumentException if the room does not exist
+     * @param roomId room ID
+     * @return the deleted room
      */
     public Room deleteRoom(String roomId) {
         Room room = requireRoom(roomId);
@@ -100,12 +126,17 @@ public class RoomManager {
         return room;
     }
 
-    // Throws IllegalArgumentException if the room does not exist
+    /**
+     * @param roomId room ID
+     * @return the room on one line
+     */
     public String listRoom(String roomId) {
         return requireRoom(roomId).toString();
     }
 
-    // Returns one line per room sorted by room ID, or NO_ROOMS if there are none
+    /**
+     * @return one line per room sorted by room ID, or NO_ROOMS
+     */
     public String listAllRooms() {
         List<Room> list = getAllRooms();
         if (list.isEmpty()) {
@@ -121,7 +152,10 @@ public class RoomManager {
         return sb.toString();
     }
 
-    // Throws IllegalArgumentException if the room does not exist
+    /**
+     * @param roomId room ID
+     * @return the room
+     */
     public Room requireRoom(String roomId) {
         Room room = roomId == null ? null : rooms.get(roomId);
         if (room == null) {

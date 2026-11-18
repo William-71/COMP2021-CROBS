@@ -5,14 +5,17 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+/**
+ * A bookable room.
+ */
 public class Room {
 
-    public static final List<String> ROOM_TYPES = Collections.unmodifiableList(Arrays.asList(
+    private static final List<String> ROOM_TYPES = Collections.unmodifiableList(Arrays.asList(
             "lectureTheatre", "computerLab", "seminarRoom", "meetingRoom"));
 
-    public static final String ERR_INVALID_TYPE = "Error: Invalid room type.";
-    public static final String ERR_INVALID_CAPACITY = "Error: Invalid capacity.";
-    public static final String ERR_INVALID_FEATURES = "Error: Invalid features.";
+    private static final String ERR_INVALID_TYPE = "Error: Invalid room type.";
+    private static final String ERR_INVALID_CAPACITY = "Error: Invalid capacity.";
+    private static final String ERR_INVALID_FEATURES = "Error: Invalid features.";
 
     private final String roomId;
     private String roomType;
@@ -20,8 +23,10 @@ public class Room {
     private List<String> features;
 
     /**
-     * @param features comma-separated list without spaces, e.g. {@code projector,whiteboard}
-     * @throws IllegalArgumentException if any field is invalid
+     * @param roomId   room ID
+     * @param roomType lectureTheatre, computerLab, seminarRoom or meetingRoom
+     * @param capacity positive capacity
+     * @param features comma-separated, no spaces
      */
     public Room(String roomId, String roomType, int capacity, String features) {
         this.roomId = roomId;
@@ -30,11 +35,10 @@ public class Room {
         setFeatures(features);
     }
 
-    public static boolean isValidRoomType(String roomType) {
-        return roomType != null && ROOM_TYPES.contains(roomType);
-    }
-
-    // Throws IllegalArgumentException if capacity is not a positive integer
+    /**
+     * @param capacity capacity text
+     * @return the capacity
+     */
     public static int parseCapacity(String capacity) {
         if (capacity == null || !capacity.matches("\\d+")) {
             throw new IllegalArgumentException(ERR_INVALID_CAPACITY);
@@ -51,8 +55,10 @@ public class Room {
         return value;
     }
 
-    // Parses a comma-separated feature list without spaces, dropping duplicates.
-    // Throws IllegalArgumentException if the list is empty or has whitespace or empty items
+    /**
+     * @param features comma-separated, no spaces
+     * @return the features without duplicates
+     */
     public static List<String> parseFeatures(String features) {
         if (features == null || features.isEmpty() || !features.matches("[^\\s,]+(,[^\\s,]+)*")) {
             throw new IllegalArgumentException(ERR_INVALID_FEATURES);
@@ -66,25 +72,40 @@ public class Room {
         return result;
     }
 
+    /**
+     * @return the room ID
+     */
     public String getRoomId() {
         return roomId;
     }
 
+    /**
+     * @return the room type
+     */
     public String getRoomType() {
         return roomType;
     }
 
+    /**
+     * @param roomType lectureTheatre, computerLab, seminarRoom or meetingRoom
+     */
     public void setRoomType(String roomType) {
-        if (!isValidRoomType(roomType)) {
+        if (roomType == null || !ROOM_TYPES.contains(roomType)) {
             throw new IllegalArgumentException(ERR_INVALID_TYPE);
         }
         this.roomType = roomType;
     }
 
+    /**
+     * @return the capacity
+     */
     public int getCapacity() {
         return capacity;
     }
 
+    /**
+     * @param capacity positive capacity
+     */
     public void setCapacity(int capacity) {
         if (capacity <= 0) {
             throw new IllegalArgumentException(ERR_INVALID_CAPACITY);
@@ -92,6 +113,9 @@ public class Room {
         this.capacity = capacity;
     }
 
+    /**
+     * @return the features, comma-separated
+     */
     public String getFeatures() {
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < features.size(); i++) {
@@ -103,23 +127,24 @@ public class Room {
         return sb.toString();
     }
 
-    public List<String> getFeatureList() {
-        return Collections.unmodifiableList(features);
-    }
-
+    /**
+     * @param features comma-separated, no spaces
+     */
     public void setFeatures(String features) {
         this.features = parseFeatures(features);
     }
 
-    public boolean hasFeature(String feature) {
-        return features.contains(feature);
-    }
-
+    /**
+     * @param required required features
+     * @return true if the room has all of them
+     */
     public boolean hasAllFeatures(List<String> required) {
         return features.containsAll(required);
     }
 
-    // Returns the numeric part of the room ID, or Integer.MAX_VALUE if it has none
+    /**
+     * @return the number in the room ID, or Integer.MAX_VALUE if none
+     */
     public int getIdNumber() {
         try {
             return Integer.parseInt(roomId.substring(1));
@@ -128,6 +153,9 @@ public class Room {
         }
     }
 
+    /**
+     * @return the room on one line
+     */
     @Override
     public String toString() {
         return roomId + " | type: " + roomType + " | capacity: " + capacity + " | features: " + getFeatures();

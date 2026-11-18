@@ -43,19 +43,19 @@ class RoomManagerTest {
 
     @Test
     void addRoomRejectsInvalidInputWithoutConsumingId() {
-        assertError(Room.ERR_INVALID_TYPE, new Executable() {
+        assertError("Error: Invalid room type.", new Executable() {
             @Override
             public void execute() {
                 rm.addRoom("office", "10", "pc");
             }
         });
-        assertError(Room.ERR_INVALID_CAPACITY, new Executable() {
+        assertError("Error: Invalid capacity.", new Executable() {
             @Override
             public void execute() {
                 rm.addRoom("computerLab", "ten", "pc");
             }
         });
-        assertError(Room.ERR_INVALID_FEATURES, new Executable() {
+        assertError("Error: Invalid features.", new Executable() {
             @Override
             public void execute() {
                 rm.addRoom("computerLab", "10", "pc,,tv");
@@ -86,25 +86,25 @@ class RoomManagerTest {
                 rm.modifyRoom("r9", "capacity", "5");
             }
         });
-        assertError(RoomManager.ERR_INVALID_FIELD, new Executable() {
+        assertError("Error: Invalid field.", new Executable() {
             @Override
             public void execute() {
                 rm.modifyRoom("r1", "roomId", "r5");
             }
         });
-        assertError(Room.ERR_INVALID_TYPE, new Executable() {
+        assertError("Error: Invalid room type.", new Executable() {
             @Override
             public void execute() {
                 rm.modifyRoom("r1", "roomType", "hall");
             }
         });
-        assertError(Room.ERR_INVALID_CAPACITY, new Executable() {
+        assertError("Error: Invalid capacity.", new Executable() {
             @Override
             public void execute() {
                 rm.modifyRoom("r1", "capacity", "0");
             }
         });
-        assertError(Room.ERR_INVALID_FEATURES, new Executable() {
+        assertError("Error: Invalid features.", new Executable() {
             @Override
             public void execute() {
                 rm.modifyRoom("r1", "features", "");

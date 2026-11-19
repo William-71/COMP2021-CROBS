@@ -33,7 +33,7 @@ public class DeleteRoomCommand implements UndoableCommand {
     public String execute() {
         room = roomManager.deleteRoom(roomId);
         cancelled = bookingManager.getFutureBookingsByRoom(roomId);
-        bookingManager.cancelBookingsByRoom(roomId);
+        removeCancelled();
         return "Room " + room.getRoomId() + " deleted.";
     }
 
@@ -48,6 +48,10 @@ public class DeleteRoomCommand implements UndoableCommand {
     @Override
     public void redo() {
         roomManager.deleteRoom(roomId);
+        removeCancelled();
+    }
+
+    private void removeCancelled() {
         for (Booking booking : cancelled) {
             bookingManager.removeBooking(booking.getBookingId());
         }

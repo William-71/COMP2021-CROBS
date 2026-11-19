@@ -33,7 +33,7 @@ public class RemoveUserCommand implements UndoableCommand {
     public String execute() {
         user = userManager.removeUser(targetUserId);
         cancelled = bookingManager.listBookings(user.getUserId());
-        bookingManager.cancelBookingsByUser(user.getUserId());
+        removeCancelled();
         return "User " + user.getUserId() + " removed.";
     }
 
@@ -48,6 +48,12 @@ public class RemoveUserCommand implements UndoableCommand {
     @Override
     public void redo() {
         userManager.discardUser(user.getUserId());
-        bookingManager.cancelBookingsByUser(user.getUserId());
+        removeCancelled();
+    }
+
+    private void removeCancelled() {
+        for (Booking booking : cancelled) {
+            bookingManager.removeBooking(booking.getBookingId());
+        }
     }
 }

@@ -25,7 +25,7 @@ class SearchScheduleManagerTest {
         roomManager.addRoom("seminarRoom", "20", "projector,whiteboard");
         roomManager.addRoom("lectureTheatre", "100", "projector,whiteboard,mic");
         roomManager.addRoom("meetingRoom", "10", "whiteboard");
-        bookingManager = new BookingManager(roomManager);
+        bookingManager = new BookingManager();
         searchScheduleManager = new SearchScheduleManager(roomManager, bookingManager);
     }
 

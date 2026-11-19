@@ -9,6 +9,9 @@ import hk.edu.polyu.comp.comp2021.crobs.model.CROBS;
  */
 public class Application {
 
+    /**
+     * @param args -html and -txt log paths
+     */
     public static void main(String[] args) {
         String htmlPath = null;
         String txtPath = null;

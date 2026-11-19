@@ -11,13 +11,22 @@ import java.util.Map;
  * Member A — user registry, role control, and login session state (REQ2–REQ6).
  */
 public class UserManager {
+    /**
+     * Superadmin user ID.
+     */
     public static final String SUPERADMIN_ID = "u0";
+    /**
+     * Superadmin name.
+     */
     public static final String SUPERADMIN_NAME = "superadmin";
 
     private final Map<String, User> users;
     private User currentUser;
     private int nextUserNumber;
 
+    /**
+     * Creates a manager with the superadmin.
+     */
     public UserManager() {
         this.users = new HashMap<String, User>();
         this.currentUser = null;
@@ -30,22 +39,39 @@ public class UserManager {
         users.put(SUPERADMIN_ID, superAdmin);
     }
 
+    /**
+     * @return the logged-in user, or null
+     */
     public User getCurrentUser() {
         return currentUser;
     }
 
+    /**
+     * @return true if a user is logged in
+     */
     public boolean isLoggedIn() {
         return currentUser != null;
     }
 
+    /**
+     * @param userId user ID
+     * @return the user, or null if none
+     */
     public User getUser(String userId) {
         return users.get(userId);
     }
 
+    /**
+     * @param userId user ID
+     * @return true if the user exists
+     */
     public boolean hasUser(String userId) {
         return users.containsKey(userId);
     }
 
+    /**
+     * @return all users
+     */
     public Collection<User> getAllUsers() {
         return users.values();
     }
@@ -53,6 +79,7 @@ public class UserManager {
     /**
      * REQ2 — admin creates a regular user.
      *
+     * @param name user's name
      * @return the newly created user
      * @throws IllegalStateException when caller lacks privilege or is not logged in
      */
@@ -92,6 +119,10 @@ public class UserManager {
 
     /**
      * REQ4 — superadmin changes another user's role to admin or regular.
+     *
+     * @param targetUserId user to change
+     * @param newRoleToken admin or regular
+     * @return the changed user
      */
     public User changeRole(String targetUserId, String newRoleToken) {
         requireSuperAdmin();
@@ -112,6 +143,9 @@ public class UserManager {
 
     /**
      * REQ5 — log in as an existing user.
+     *
+     * @param userId user ID
+     * @return the logged-in user
      */
     public User login(String userId) {
         User user = users.get(userId);
@@ -132,12 +166,18 @@ public class UserManager {
         currentUser = null;
     }
 
+    /**
+     * Throws if no user is logged in.
+     */
     public void requireLoggedIn() {
         if (currentUser == null) {
             throw new IllegalStateException("Error: No user is logged in.");
         }
     }
 
+    /**
+     * Throws if the current user is not an admin.
+     */
     public void requireAdmin() {
         requireLoggedIn();
         if (!currentUser.isAdmin()) {
@@ -145,6 +185,9 @@ public class UserManager {
         }
     }
 
+    /**
+     * Throws if the current user is not the superadmin.
+     */
     public void requireSuperAdmin() {
         requireLoggedIn();
         if (!currentUser.isSuperAdmin()) {

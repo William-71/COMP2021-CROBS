@@ -20,6 +20,9 @@ public class BookingManager {
     private final RoomManager roomManager;
     private int nextBookingNumber;
 
+    /**
+     * @param roomManager room manager
+     */
     public BookingManager(RoomManager roomManager) {
         if (roomManager == null) {
             throw new IllegalArgumentException("RoomManager cannot be null.");
@@ -29,16 +32,25 @@ public class BookingManager {
         this.nextBookingNumber = 1;
     }
 
+    /**
+     * @param bookingId booking ID
+     * @return the booking, or null if none
+     */
     public Booking getBooking(String bookingId) {
         return bookings.get(bookingId);
     }
 
+    /**
+     * @return all bookings
+     */
     public List<Booking> getAllBookings() {
         return new ArrayList<Booking>(bookings.values());
     }
 
     /**
      * Registers a booking instance (used by Member C implementation and integration tests).
+     *
+     * @param booking booking to add
      */
     public void putBooking(Booking booking) {
         if (booking == null) {
@@ -54,12 +66,22 @@ public class BookingManager {
         bookings.put(booking.getBookingId(), booking);
     }
 
+    /**
+     * @return the next booking ID
+     */
     public String nextBookingId() {
         String id = "b" + nextBookingNumber;
         nextBookingNumber++;
         return id;
     }
 
+    /**
+     * @param roomId    room ID
+     * @param date      yyyy-MM-dd
+     * @param startTime HH:mm
+     * @param endTime   HH:mm
+     * @return true if the room is free
+     */
     public boolean isRoomAvailable(String roomId, String date, String startTime, String endTime) {
         if (roomId == null || date == null || startTime == null || endTime == null) {
             throw new IllegalArgumentException("Room and time information cannot be null.");
@@ -97,6 +119,9 @@ public class BookingManager {
     /**
      * Cancels all future bookings for a room (used by {@code deleteRoom}).
      * Placeholder: currently removes all bookings for the room.
+     *
+     * @param roomId room ID
+     * @return number of cancelled bookings
      */
     public int cancelBookingsByRoom(String roomId) {// only remove future bookings for the room, preserve past bookings
         if (roomId == null || roomId.trim().isEmpty()) {
@@ -121,6 +146,15 @@ public class BookingManager {
 
     // ---- Stubs for Member C ----
 
+    /**
+     * @param roomId      room ID
+     * @param date        yyyy-MM-dd
+     * @param startTime   HH:mm
+     * @param endTime     HH:mm
+     * @param purpose     purpose
+     * @param ownerUserId owner's user ID
+     * @return the new booking
+     */
     public Booking book(String roomId, String date, String startTime, String endTime,
                         String purpose, String ownerUserId) {
         if (roomId == null || date == null || startTime == null || endTime == null 
@@ -151,6 +185,16 @@ public class BookingManager {
         return booking;
     }
 
+    /**
+     * @param bookingId       booking ID
+     * @param roomId          room ID
+     * @param date            yyyy-MM-dd
+     * @param startTime       HH:mm
+     * @param endTime         HH:mm
+     * @param purpose         purpose
+     * @param requesterUserId requester's user ID
+     * @return the modified booking
+     */
     public Booking modifyBooking(String bookingId, String roomId, String date,
                                  String startTime, String endTime, String purpose,
                                  String requesterUserId) {
@@ -194,6 +238,11 @@ public class BookingManager {
         return booking;
     }
 
+    /**
+     * @param bookingId       booking ID
+     * @param requesterUserId requester's user ID
+     * @return the deleted booking
+     */
     public Booking deleteBooking(String bookingId, String requesterUserId) {
         if (bookingId == null || bookingId.trim().isEmpty()) {
             throw new IllegalArgumentException("Booking ID cannot be null or blank.");
@@ -242,6 +291,10 @@ public class BookingManager {
         return false;
     }
 
+    /**
+     * @param ownerUserId owner's user ID
+     * @return the user's bookings
+     */
     public List<Booking> listBookings(String ownerUserId) {
         if (ownerUserId == null || ownerUserId.trim().isEmpty()) {
             throw new IllegalArgumentException("Owner user ID cannot be null or blank.");

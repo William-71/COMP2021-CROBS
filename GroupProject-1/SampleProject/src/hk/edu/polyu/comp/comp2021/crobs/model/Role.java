@@ -4,8 +4,17 @@ package hk.edu.polyu.comp.comp2021.crobs.model;
  * User access roles in Crobs.
  */
 public enum Role {
+    /**
+     * Superadmin.
+     */
     SUPERADMIN,
+    /**
+     * Admin.
+     */
     ADMIN,
+    /**
+     * Regular user.
+     */
     REGULAR;
 
     /**
@@ -44,10 +53,16 @@ public enum Role {
         }
     }
 
+    /**
+     * @return true if admin or superadmin
+     */
     public boolean isAdmin() {
         return this == ADMIN || this == SUPERADMIN;
     }
 
+    /**
+     * @return true if superadmin
+     */
     public boolean isSuperAdmin() {
         return this == SUPERADMIN;
     }

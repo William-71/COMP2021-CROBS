@@ -15,6 +15,10 @@ public class CommandLogger {
     private final List<String> commands;
     private int nextIndex;
 
+    /**
+     * @param htmlPath HTML log path, may be null
+     * @param txtPath  TXT log path, may be null
+     */
     public CommandLogger(String htmlPath, String txtPath) {
         this.htmlPath = htmlPath;
         this.txtPath = txtPath;
@@ -36,10 +40,16 @@ public class CommandLogger {
         flush();
     }
 
+    /**
+     * @return number of logged commands
+     */
     public int getLoggedCount() {
         return commands.size();
     }
 
+    /**
+     * @return the logged commands
+     */
     public List<String> getCommands() {
         return new ArrayList<String>(commands);
     }

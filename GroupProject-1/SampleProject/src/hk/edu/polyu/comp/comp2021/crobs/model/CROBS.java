@@ -43,36 +43,60 @@ public class CROBS {
         this.running = false;
     }
 
+    /**
+     * @return the user manager
+     */
     public UserManager getUserManager() {
         return userManager;
     }
 
+    /**
+     * @return the room manager
+     */
     public RoomManager getRoomManager() {
         return roomManager;
     }
 
+    /**
+     * @return the booking manager
+     */
     public BookingManager getBookingManager() {
         return bookingManager;
     }
 
+    /**
+     * @return the search and schedule manager
+     */
     public SearchScheduleManager getSearchScheduleManager() {
         return searchScheduleManager;
     }
 
+    /**
+     * @return the command logger
+     */
     public CommandLogger getLogger() {
         return logger;
     }
 
+    /**
+     * @return the logged-in user, or null
+     */
     public User getCurrentUser() {
         return userManager.getCurrentUser();
     }
 
+    /**
+     * @return true while the CLI loop is running
+     */
     public boolean isRunning() {
         return running;
     }
 
     /**
      * Interactive CLI loop. Terminates when {@code quit} is processed.
+     *
+     * @param in  input stream
+     * @param out output stream
      */
     public void run(InputStream in, PrintStream out) {
         running = true;

@@ -6,6 +6,7 @@ import hk.edu.polyu.comp.comp2021.crobs.model.User;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * Member A — user registry, role control, and login session state (REQ2–REQ6).
@@ -21,7 +22,7 @@ public class UserManager {
     public static final String SUPERADMIN_NAME = "superadmin";
 
     private final Map<String, User> users;
-    private User currentUser;
+    private Optional<User> currentUser;
     private int nextUserNumber;
 
     /**
@@ -29,7 +30,7 @@ public class UserManager {
      */
     public UserManager() {
         this.users = new HashMap<String, User>();
-        this.currentUser = null;
+        this.currentUser = Optional.empty();
         this.nextUserNumber = 1;
         bootstrapSuperAdmin();
     }
@@ -43,14 +44,14 @@ public class UserManager {
      * @return the logged-in user, or null
      */
     public User getCurrentUser() {
-        return currentUser;
+        return currentUser.orElse(null);
     }
 
     /**
      * @return true if a user is logged in
      */
     public boolean isLoggedIn() {
-        return currentUser != null;
+        return currentUser.isPresent();
     }
 
     /**
@@ -111,8 +112,8 @@ public class UserManager {
             throw new IllegalStateException("Error: Cannot remove this user.");
         }
         users.remove(targetUserId);
-        if (currentUser != null && targetUserId.equals(currentUser.getUserId())) {
-            currentUser = null;
+        if (isLoggedIn() && targetUserId.equals(currentUser.get().getUserId())) {
+            currentUser = Optional.empty();
         }
         return target;
     }
@@ -152,7 +153,7 @@ public class UserManager {
         if (user == null) {
             throw new IllegalArgumentException("Error: User not found.");
         }
-        currentUser = user;
+        currentUser = Optional.of(user);
         return user;
     }
 
@@ -160,17 +161,15 @@ public class UserManager {
      * REQ6 — log out the current user.
      */
     public void logout() {
-        if (currentUser == null) {
-            throw new IllegalStateException("Error: No user is logged in.");
-        }
-        currentUser = null;
+        requireLoggedIn();
+        currentUser = Optional.empty();
     }
 
     /**
      * Throws if no user is logged in.
      */
     public void requireLoggedIn() {
-        if (currentUser == null) {
+        if (!isLoggedIn()) {
             throw new IllegalStateException("Error: No user is logged in.");
         }
     }
@@ -180,7 +179,7 @@ public class UserManager {
      */
     public void requireAdmin() {
         requireLoggedIn();
-        if (!currentUser.isAdmin()) {
+        if (!currentUser.get().isAdmin()) {
             throw new IllegalStateException("Error: Access denied.");
         }
     }
@@ -190,7 +189,7 @@ public class UserManager {
      */
     public void requireSuperAdmin() {
         requireLoggedIn();
-        if (!currentUser.isSuperAdmin()) {
+        if (!currentUser.get().isSuperAdmin()) {
             throw new IllegalStateException("Error: Access denied.");
         }
     }

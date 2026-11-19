@@ -231,4 +231,60 @@ class CROBSTest {
         assertEquals("", crobs.processCommand("   "));
         assertEquals(0, crobs.getLogger().getLoggedCount());
     }
+
+    @Test
+    void nullCommandRejected() {
+        assertEquals("Error: Invalid arguments.", crobs.processCommand(null));
+        assertNotNull(crobs.getSearchScheduleManager());
+    }
+
+    @Test
+    void wrongArgumentCountsRejected() {
+        crobs.processCommand("login u0");
+        String[] badCommands = {
+            "quit now",
+            "addRoom computerLab 10",
+            "modifyRoom r1 capacity",
+            "deleteRoom",
+            "listRoom",
+            "listAllRooms extra",
+            "book r1 2099-01-01 09:00 10:00",
+            "modifyBooking b1 r1 2099-01-01 09:00 10:00",
+            "deleteBooking",
+            "listBookings extra",
+            "search 2099-01-01 09:00 10:00 1",
+            "schedule r1"
+        };
+        for (String command : badCommands) {
+            assertEquals("Error: Invalid arguments.", crobs.processCommand(command), command);
+        }
+    }
+
+    @Test
+    void listBookingsShowsOneLinePerBooking() {
+        crobs.processCommand("login u0");
+        crobs.processCommand("addRoom meetingRoom 8 tv");
+        crobs.processCommand("book r1 2099-01-02 09:00 10:00 second");
+        crobs.processCommand("book r1 2099-01-01 09:00 10:00 first");
+
+        String[] lines = crobs.processCommand("listBookings").split(System.lineSeparator());
+        assertEquals(2, lines.length);
+        assertEquals("b2 | room: r1 | date: 2099-01-01 | time: 09:00-10:00 | purpose: first", lines[0]);
+        assertEquals("b1 | room: r1 | date: 2099-01-02 | time: 09:00-10:00 | purpose: second", lines[1]);
+    }
+
+    @Test
+    void runSkipsBlankLinesAndStopsAtEndOfInput() {
+        String input = "\n   \nlogin u0\nlogout\n";
+        ByteArrayInputStream in = new ByteArrayInputStream(input.getBytes(StandardCharsets.UTF_8));
+        ByteArrayOutputStream outBuffer = new ByteArrayOutputStream();
+
+        crobs.run(in, new PrintStream(outBuffer));
+
+        String[] lines = outBuffer.toString().trim().split("\\R");
+        assertEquals(2, lines.length);
+        assertEquals("Logged in as u0.", lines[0]);
+        assertEquals("Logged out.", lines[1]);
+        assertEquals(2, crobs.getLogger().getLoggedCount());
+    }
 }

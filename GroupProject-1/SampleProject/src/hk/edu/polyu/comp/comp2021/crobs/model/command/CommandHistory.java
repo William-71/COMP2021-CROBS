@@ -11,8 +11,8 @@ public class CommandHistory {
     private static final String ERR_NOTHING_TO_UNDO = "Error: Nothing to undo.";
     private static final String ERR_NOTHING_TO_REDO = "Error: Nothing to redo.";
 
-    private final Deque<UndoableCommand> undoStack = new ArrayDeque<UndoableCommand>();
-    private final Deque<UndoableCommand> redoStack = new ArrayDeque<UndoableCommand>();
+    private final Deque<UndoableCommand> undoStack = new ArrayDeque<>();
+    private final Deque<UndoableCommand> redoStack = new ArrayDeque<>();
 
     /**
      * Executes a command and records it.

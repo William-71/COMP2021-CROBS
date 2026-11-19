@@ -8,7 +8,7 @@ import hk.edu.polyu.comp.comp2021.crobs.model.Room;
 import java.util.List;
 
 /**
- * deleteRoom; undo restores the room and its cancelled future bookings.
+ * deleteRoom; undo restores the room and its removed future bookings.
  */
 public class DeleteRoomCommand implements UndoableCommand {
 
@@ -16,7 +16,7 @@ public class DeleteRoomCommand implements UndoableCommand {
     private final BookingManager bookingManager;
     private final String roomId;
     private Room room;
-    private List<Booking> cancelled;
+    private List<Booking> removedBookings;
 
     /**
      * @param roomManager    room manager
@@ -32,7 +32,7 @@ public class DeleteRoomCommand implements UndoableCommand {
     @Override
     public String execute() {
         room = roomManager.deleteRoom(roomId);
-        cancelled = bookingManager.getFutureBookingsByRoom(roomId);
+        removedBookings = bookingManager.getFutureBookingsByRoom(roomId);
         removeCancelled();
         return "Room " + room.getRoomId() + " deleted.";
     }
@@ -40,7 +40,7 @@ public class DeleteRoomCommand implements UndoableCommand {
     @Override
     public void undo() {
         roomManager.restoreRoom(room);
-        for (Booking booking : cancelled) {
+        for (Booking booking : removedBookings) {
             bookingManager.putBooking(booking);
         }
     }
@@ -52,7 +52,7 @@ public class DeleteRoomCommand implements UndoableCommand {
     }
 
     private void removeCancelled() {
-        for (Booking booking : cancelled) {
+        for (Booking booking : removedBookings) {
             bookingManager.removeBooking(booking.getBookingId());
         }
     }

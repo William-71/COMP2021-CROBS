@@ -8,7 +8,7 @@ import hk.edu.polyu.comp.comp2021.crobs.model.User;
 import java.util.List;
 
 /**
- * removeUser; undo restores the user and their cancelled bookings.
+ * removeUser; undo restores the user and their removed bookings.
  */
 public class RemoveUserCommand implements UndoableCommand {
 
@@ -16,7 +16,7 @@ public class RemoveUserCommand implements UndoableCommand {
     private final BookingManager bookingManager;
     private final String targetUserId;
     private User user;
-    private List<Booking> cancelled;
+    private List<Booking> removedBookings;
 
     /**
      * @param userManager    user manager
@@ -32,7 +32,7 @@ public class RemoveUserCommand implements UndoableCommand {
     @Override
     public String execute() {
         user = userManager.removeUser(targetUserId);
-        cancelled = bookingManager.listBookings(user.getUserId());
+        removedBookings = bookingManager.listBookings(user.getUserId());
         removeCancelled();
         return "User " + user.getUserId() + " removed.";
     }
@@ -40,7 +40,7 @@ public class RemoveUserCommand implements UndoableCommand {
     @Override
     public void undo() {
         userManager.restoreUser(user);
-        for (Booking booking : cancelled) {
+        for (Booking booking : removedBookings) {
             bookingManager.putBooking(booking);
         }
     }
@@ -52,7 +52,7 @@ public class RemoveUserCommand implements UndoableCommand {
     }
 
     private void removeCancelled() {
-        for (Booking booking : cancelled) {
+        for (Booking booking : removedBookings) {
             bookingManager.removeBooking(booking.getBookingId());
         }
     }

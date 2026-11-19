@@ -130,7 +130,7 @@ public class UserManager {
             throw new IllegalStateException("Error: Cannot remove this user.");
         }
         users.remove(targetUserId);
-        if (isLoggedIn() && targetUserId.equals(currentUser.get().getUserId())) {
+        if (isLoggedIn() && targetUserId.equals(getCurrentUser().getUserId())) {
             currentUser = Optional.empty();
         }
         return target;
@@ -197,7 +197,7 @@ public class UserManager {
      */
     public void requireAdmin() {
         requireLoggedIn();
-        if (!currentUser.get().isAdmin()) {
+        if (!getCurrentUser().isAdmin()) {
             throw new IllegalStateException("Error: Access denied.");
         }
     }
@@ -207,7 +207,7 @@ public class UserManager {
      */
     public void requireSuperAdmin() {
         requireLoggedIn();
-        if (!currentUser.get().isSuperAdmin()) {
+        if (!getCurrentUser().isSuperAdmin()) {
             throw new IllegalStateException("Error: Access denied.");
         }
     }

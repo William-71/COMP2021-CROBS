@@ -1,8 +1,7 @@
 package hk.edu.polyu.comp.comp2021.crobs.model;
 
 /**
- * Placeholder for Member C — booking entity.
- * Fields follow REQ10–REQ12 / REQ14 / REQ17.
+ * A room booking.
  */
 public class Booking {
     private final String bookingId;

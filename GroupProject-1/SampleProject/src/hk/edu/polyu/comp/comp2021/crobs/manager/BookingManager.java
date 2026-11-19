@@ -48,7 +48,7 @@ public class BookingManager {
     }
 
     /**
-     * Registers a booking instance (used by Member C implementation and integration tests).
+     * Registers a booking instance.
      *
      * @param booking booking to add
      */
@@ -95,9 +95,9 @@ public class BookingManager {
     }
 
     /**
-     * Cancels bookings dated today or later for the specified user. (used by {@code removeUser}).
+     * Cancels all bookings of the specified user (used by {@code removeUser}).
      *
-     * @param userId user whose future bookings should be cancelled
+     * @param userId user whose bookings should be cancelled
      * @return number of cancelled bookings
      */
     public int cancelBookingsByUser(String userId) {
@@ -118,12 +118,11 @@ public class BookingManager {
 
     /**
      * Cancels all future bookings for a room (used by {@code deleteRoom}).
-     * Placeholder: currently removes all bookings for the room.
      *
      * @param roomId room ID
      * @return number of cancelled bookings
      */
-    public int cancelBookingsByRoom(String roomId) {// only remove future bookings for the room, preserve past bookings
+    public int cancelBookingsByRoom(String roomId) {
         if (roomId == null || roomId.trim().isEmpty()) {
             throw new IllegalArgumentException("Error: Invalid arguments.");
         }
@@ -143,8 +142,6 @@ public class BookingManager {
         }
         return removed;
     }
-
-    // ---- Stubs for Member C ----
 
     /**
      * @param roomId      room ID

@@ -30,7 +30,7 @@ public class SearchScheduleManager {
      */
     public SearchScheduleManager(RoomManager roomManager, BookingManager bookingManager) {
         if (roomManager == null || bookingManager == null) {
-            throw new IllegalArgumentException("Managers cannot be null.");
+            throw new IllegalArgumentException("Error: Invalid arguments.");
         }
         this.roomManager = roomManager;
         this.bookingManager = bookingManager;
@@ -107,7 +107,7 @@ public class SearchScheduleManager {
      */
     public String formatSearchResults(List<Room> rooms) {
         if (rooms == null) {
-            throw new IllegalArgumentException("Rooms cannot be null.");
+            throw new IllegalArgumentException("Error: Invalid arguments.");
         }
         if (rooms.isEmpty()) {
             return RoomManager.NO_ROOMS;
@@ -129,7 +129,7 @@ public class SearchScheduleManager {
      */
     public String formatSchedule(List<Booking> bookings, User viewer) {
         if (bookings == null || viewer == null) {
-            throw new IllegalArgumentException("Bookings and viewer cannot be null.");
+            throw new IllegalArgumentException("Error: Invalid arguments.");
         }
         if (bookings.isEmpty()) {
             return NO_BOOKINGS;
@@ -156,21 +156,21 @@ public class SearchScheduleManager {
             LocalTime start = LocalTime.parse(startTime);
             LocalTime end = LocalTime.parse(endTime);
             if (!start.isBefore(end)) {
-                throw new IllegalArgumentException("Start time must be before end time.");
+                throw new IllegalArgumentException("Error: Invalid time range.");
             }
         } catch (DateTimeParseException e) {
-            throw new IllegalArgumentException("Time must use HH:mm.");
+            throw new IllegalArgumentException("Error: Invalid time.");
         }
     }
 
     private LocalDate parseDate(String date) {
         if (date == null) {
-            throw new IllegalArgumentException("Date must use yyyy-MM-dd.");
+            throw new IllegalArgumentException("Error: Invalid date.");
         }
         try {
             return LocalDate.parse(date);
         } catch (DateTimeParseException e) {
-            throw new IllegalArgumentException("Date must use yyyy-MM-dd.");
+            throw new IllegalArgumentException("Error: Invalid date.");
         }
     }
 

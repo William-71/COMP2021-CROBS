@@ -25,7 +25,7 @@ public class BookingManager {
      */
     public BookingManager(RoomManager roomManager) {
         if (roomManager == null) {
-            throw new IllegalArgumentException("RoomManager cannot be null.");
+            throw new IllegalArgumentException("Error: Invalid arguments.");
         }
         this.bookings = new HashMap<String, Booking>();
         this.roomManager = roomManager;
@@ -54,12 +54,12 @@ public class BookingManager {
      */
     public void putBooking(Booking booking) {
         if (booking == null) {
-            throw new IllegalArgumentException("Booking cannot be null.");
+            throw new IllegalArgumentException("Error: Invalid arguments.");
         }
         if (booking.getBookingId() == null || booking.getOwnerUserId() == null || booking.getRoomId() == null
             || booking.getDate() == null || booking.getStartTime() == null || booking.getEndTime() == null
             || booking.getPurpose() == null) {
-            throw new IllegalArgumentException("Booking fields cannot be null.");
+            throw new IllegalArgumentException("Error: Invalid arguments.");
         }
         roomManager.requireRoom(booking.getRoomId());
         validateDateAndTime(booking.getDate(), booking.getStartTime(), booking.getEndTime());
@@ -84,10 +84,10 @@ public class BookingManager {
      */
     public boolean isRoomAvailable(String roomId, String date, String startTime, String endTime) {
         if (roomId == null || date == null || startTime == null || endTime == null) {
-            throw new IllegalArgumentException("Room and time information cannot be null.");
+            throw new IllegalArgumentException("Error: Invalid arguments.");
         }
         if (roomId.trim().isEmpty() || date.trim().isEmpty() || startTime.trim().isEmpty() || endTime.trim().isEmpty()) {
-            throw new IllegalArgumentException("Room and time information cannot be blank.");
+            throw new IllegalArgumentException("Error: Invalid arguments.");
         }
         roomManager.requireRoom(roomId);
         validateDateAndTime(date, startTime, endTime);
@@ -102,7 +102,7 @@ public class BookingManager {
      */
     public int cancelBookingsByUser(String userId) {
         if (userId == null || userId.trim().isEmpty()) {
-            throw new IllegalArgumentException("User ID cannot be null or blank.");
+            throw new IllegalArgumentException("Error: Invalid arguments.");
         }
         int removed = 0;
         Iterator<Map.Entry<String, Booking>> it = bookings.entrySet().iterator();
@@ -125,7 +125,7 @@ public class BookingManager {
      */
     public int cancelBookingsByRoom(String roomId) {// only remove future bookings for the room, preserve past bookings
         if (roomId == null || roomId.trim().isEmpty()) {
-            throw new IllegalArgumentException("Room ID cannot be null or blank.");
+            throw new IllegalArgumentException("Error: Invalid arguments.");
         }
         int removed = 0;
         LocalDate today = LocalDate.now();
@@ -159,12 +159,12 @@ public class BookingManager {
                         String purpose, String ownerUserId) {
         if (roomId == null || date == null || startTime == null || endTime == null 
             || purpose == null || ownerUserId == null) {
-            throw new IllegalArgumentException("Booking information cannot be null.");
+            throw new IllegalArgumentException("Error: Invalid arguments.");
         }
 
         if (roomId.trim().isEmpty() || date.trim().isEmpty() || startTime.trim().isEmpty() 
             || endTime.trim().isEmpty() || purpose.trim().isEmpty() || ownerUserId.trim().isEmpty()) {
-            throw new IllegalArgumentException("Booking information cannot be blank.");
+            throw new IllegalArgumentException("Error: Invalid arguments.");
         }
 
         if (!roomManager.hasRoom(roomId)) {
@@ -174,7 +174,7 @@ public class BookingManager {
         validateDateAndTime(date, startTime, endTime);
 
         if (hasConflict(null, roomId, date, startTime, endTime)) {
-            throw new IllegalArgumentException("The room is already booked during this time.");
+            throw new IllegalArgumentException("Error: Room already booked.");
         }
 
         String bookingId = nextBookingId();
@@ -200,23 +200,23 @@ public class BookingManager {
                                  String requesterUserId) {
         if (bookingId == null || roomId == null || date == null || startTime == null || endTime == null
             || purpose == null || requesterUserId == null) {
-            throw new IllegalArgumentException("Booking information cannot be null.");
+            throw new IllegalArgumentException("Error: Invalid arguments.");
         }
 
         if (bookingId.trim().isEmpty() || requesterUserId.trim().isEmpty() || roomId.trim().isEmpty()
             || date.trim().isEmpty() || startTime.trim().isEmpty() || endTime.trim().isEmpty()
             || purpose.trim().isEmpty()) {
-            throw new IllegalArgumentException("Booking information cannot be blank.");
+            throw new IllegalArgumentException("Error: Invalid arguments.");
         }
 
         Booking booking = bookings.get(bookingId);
 
         if (booking == null) {
-            throw new IllegalArgumentException("Booking does not exist: " + bookingId);
+            throw new IllegalArgumentException("Error: Booking not found.");
         }
 
         if (!requesterUserId.equals(booking.getOwnerUserId())) {
-            throw new IllegalArgumentException("You do not own this booking.");
+            throw new IllegalArgumentException("Error: Access denied.");
         }
 
         if (!roomManager.hasRoom(roomId)) {
@@ -226,7 +226,7 @@ public class BookingManager {
         validateDateAndTime(date, startTime, endTime);
 
         if (hasConflict(bookingId, roomId, date, startTime, endTime)) {
-            throw new IllegalArgumentException("The room is already booked during this time.");
+            throw new IllegalArgumentException("Error: Room already booked.");
         }
 
         booking.setRoomId(roomId);
@@ -245,21 +245,21 @@ public class BookingManager {
      */
     public Booking deleteBooking(String bookingId, String requesterUserId) {
         if (bookingId == null || bookingId.trim().isEmpty()) {
-            throw new IllegalArgumentException("Booking ID cannot be null or blank.");
+            throw new IllegalArgumentException("Error: Invalid arguments.");
         }
 
         if (requesterUserId == null || requesterUserId.trim().isEmpty()) {
-            throw new IllegalArgumentException("Requester user ID cannot be null or blank.");
+            throw new IllegalArgumentException("Error: Invalid arguments.");
         }
 
         Booking booking = bookings.get(bookingId);
 
         if (booking == null) {
-            throw new IllegalArgumentException("Booking does not exist: " + bookingId);
+            throw new IllegalArgumentException("Error: Booking not found.");
         }
 
         if (!requesterUserId.equals(booking.getOwnerUserId())) {
-            throw new IllegalArgumentException("You do not own this booking.");
+            throw new IllegalArgumentException("Error: Access denied.");
         }
 
         return bookings.remove(bookingId);
@@ -297,7 +297,7 @@ public class BookingManager {
      */
     public List<Booking> listBookings(String ownerUserId) {
         if (ownerUserId == null || ownerUserId.trim().isEmpty()) {
-            throw new IllegalArgumentException("Owner user ID cannot be null or blank.");
+            throw new IllegalArgumentException("Error: Invalid arguments.");
         }
 
         List<Booking> result = new ArrayList<Booking>();
@@ -319,13 +319,17 @@ public class BookingManager {
     private void validateDateAndTime(String date, String startTime, String endTime) {
         try {
             LocalDate.parse(date);
+        } catch (DateTimeParseException e) {
+            throw new IllegalArgumentException("Error: Invalid date.");
+        }
+        try {
             LocalTime start = LocalTime.parse(startTime);
             LocalTime end = LocalTime.parse(endTime);
             if (!start.isBefore(end)) {
-                throw new IllegalArgumentException("Start time must be before end time.");
+                throw new IllegalArgumentException("Error: Invalid time range.");
             }
         } catch (DateTimeParseException e) {
-            throw new IllegalArgumentException("Date must use yyyy-MM-dd and time must use HH:mm.");
+            throw new IllegalArgumentException("Error: Invalid time.");
         }
     }
 }

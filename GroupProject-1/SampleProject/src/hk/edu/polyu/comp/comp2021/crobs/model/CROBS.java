@@ -4,6 +4,16 @@ import hk.edu.polyu.comp.comp2021.crobs.manager.BookingManager;
 import hk.edu.polyu.comp.comp2021.crobs.manager.RoomManager;
 import hk.edu.polyu.comp.comp2021.crobs.manager.SearchScheduleManager;
 import hk.edu.polyu.comp.comp2021.crobs.manager.UserManager;
+import hk.edu.polyu.comp.comp2021.crobs.model.command.AddRoomCommand;
+import hk.edu.polyu.comp.comp2021.crobs.model.command.AddUserCommand;
+import hk.edu.polyu.comp.comp2021.crobs.model.command.BookCommand;
+import hk.edu.polyu.comp.comp2021.crobs.model.command.ChangeRoleCommand;
+import hk.edu.polyu.comp.comp2021.crobs.model.command.CommandHistory;
+import hk.edu.polyu.comp.comp2021.crobs.model.command.DeleteBookingCommand;
+import hk.edu.polyu.comp.comp2021.crobs.model.command.DeleteRoomCommand;
+import hk.edu.polyu.comp.comp2021.crobs.model.command.ModifyBookingCommand;
+import hk.edu.polyu.comp.comp2021.crobs.model.command.ModifyRoomCommand;
+import hk.edu.polyu.comp.comp2021.crobs.model.command.RemoveUserCommand;
 
 import java.io.InputStream;
 import java.io.PrintStream;
@@ -21,6 +31,7 @@ public class CROBS {
     private final BookingManager bookingManager;
     private final SearchScheduleManager searchScheduleManager;
     private final CommandLogger logger;
+    private final CommandHistory history;
     private boolean running;
 
     /**
@@ -40,6 +51,7 @@ public class CROBS {
         this.bookingManager = new BookingManager(this.roomManager);
         this.searchScheduleManager = new SearchScheduleManager(this.roomManager, this.bookingManager);
         this.logger = new CommandLogger(htmlPath, txtPath);
+        this.history = new CommandHistory();
         this.running = false;
     }
 
@@ -172,6 +184,10 @@ public class CROBS {
                 return handleListAllRooms(parts);
             } else if ("listBookings".equals(cmd)) {
                 return handleListBookings(parts);
+            } else if ("undo".equals(cmd)) {
+                return handleUndo(parts);
+            } else if ("redo".equals(cmd)) {
+                return handleRedo(parts);
             } else {
                 return "Error: Unknown command.";
             }
@@ -188,26 +204,21 @@ public class CROBS {
         if (parts.length != 2) {
             return "Error: Invalid arguments.";
         }
-        User user = userManager.addUser(parts[1]);
-        return "User " + user.getUserId() + " created.";
+        return history.run(new AddUserCommand(userManager, parts[1]));
     }
 
     private String handleRemoveUser(String[] parts) {
         if (parts.length != 2) {
             return "Error: Invalid arguments.";
         }
-        String targetId = parts[1];
-        User removed = userManager.removeUser(targetId);
-        bookingManager.cancelBookingsByUser(removed.getUserId());
-        return "User " + removed.getUserId() + " removed.";
+        return history.run(new RemoveUserCommand(userManager, bookingManager, parts[1]));
     }
 
     private String handleChangeRole(String[] parts) {
         if (parts.length != 3) {
             return "Error: Invalid arguments.";
         }
-        User user = userManager.changeRole(parts[1], parts[2]);
-        return "User " + user.getUserId() + " role changed to " + user.getRole().toCommandToken() + ".";
+        return history.run(new ChangeRoleCommand(userManager, parts[1], parts[2]));
     }
 
     private String handleLogin(String[] parts) {
@@ -215,6 +226,7 @@ public class CROBS {
             return "Error: Invalid arguments.";
         }
         User user = userManager.login(parts[1]);
+        history.clear();
         return "Logged in as " + user.getUserId() + ".";
     }
 
@@ -223,6 +235,7 @@ public class CROBS {
             return "Error: Invalid arguments.";
         }
         userManager.logout();
+        history.clear();
         return "Logged out.";
     }
 
@@ -241,8 +254,7 @@ public class CROBS {
             return "Error: Invalid arguments.";
         }
         userManager.requireAdmin();
-        Room room = roomManager.addRoom(parts[1], parts[2], parts[3]);
-        return "Room " + room.getRoomId() + " created.";
+        return history.run(new AddRoomCommand(roomManager, parts[1], parts[2], parts[3]));
     }
 
     private String handleModifyRoom(String[] parts) {
@@ -250,8 +262,7 @@ public class CROBS {
             return "Error: Invalid arguments.";
         }
         userManager.requireAdmin();
-        Room room = roomManager.modifyRoom(parts[1], parts[2], parts[3]);
-        return "Room " + room.getRoomId() + " modified.";
+        return history.run(new ModifyRoomCommand(roomManager, parts[1], parts[2], parts[3]));
     }
 
     private String handleDeleteRoom(String[] parts) {
@@ -259,9 +270,7 @@ public class CROBS {
             return "Error: Invalid arguments.";
         }
         userManager.requireAdmin();
-        Room room = roomManager.deleteRoom(parts[1]);
-        bookingManager.cancelBookingsByRoom(room.getRoomId());
-        return "Room " + room.getRoomId() + " deleted.";
+        return history.run(new DeleteRoomCommand(roomManager, bookingManager, parts[1]));
     }
 
     private String handleListRoom(String[] parts) {
@@ -286,10 +295,8 @@ public class CROBS {
         }
         userManager.requireLoggedIn();
         String purpose = joinFrom(parts, 5);
-        Booking booking = bookingManager.book(
-                parts[1], parts[2], parts[3], parts[4], purpose,
-                userManager.getCurrentUser().getUserId());
-        return "Booking " + booking.getBookingId() + " created.";
+        return history.run(new BookCommand(bookingManager, parts[1], parts[2], parts[3], parts[4], purpose,
+                userManager.getCurrentUser().getUserId()));
     }
 
     private String handleModifyBooking(String[] parts) {
@@ -298,10 +305,8 @@ public class CROBS {
         }
         userManager.requireLoggedIn();
         String purpose = joinFrom(parts, 6);
-        Booking booking = bookingManager.modifyBooking(
-                parts[1], parts[2], parts[3], parts[4], parts[5], purpose,
-                userManager.getCurrentUser().getUserId());
-        return "Booking " + booking.getBookingId() + " modified.";
+        return history.run(new ModifyBookingCommand(bookingManager, parts[1], parts[2], parts[3], parts[4],
+                parts[5], purpose, userManager.getCurrentUser().getUserId()));
     }
 
     private String handleDeleteBooking(String[] parts) {
@@ -309,9 +314,8 @@ public class CROBS {
             return "Error: Invalid arguments.";
         }
         userManager.requireLoggedIn();
-        Booking booking = bookingManager.deleteBooking(
-                parts[1], userManager.getCurrentUser().getUserId());
-        return "Booking " + booking.getBookingId() + " deleted.";
+        return history.run(new DeleteBookingCommand(bookingManager, parts[1],
+                userManager.getCurrentUser().getUserId()));
     }
 
     private String handleListBookings(String[] parts) {
@@ -358,6 +362,24 @@ public class CROBS {
         userManager.requireLoggedIn();
         List<Booking> bookings = searchScheduleManager.schedule(parts[1], parts[2]);
         return searchScheduleManager.formatSchedule(bookings, userManager.getCurrentUser());
+    }
+
+    private String handleUndo(String[] parts) {
+        if (parts.length != 1) {
+            return "Error: Invalid arguments.";
+        }
+        userManager.requireLoggedIn();
+        history.undo();
+        return "Undo successful.";
+    }
+
+    private String handleRedo(String[] parts) {
+        if (parts.length != 1) {
+            return "Error: Invalid arguments.";
+        }
+        userManager.requireLoggedIn();
+        history.redo();
+        return "Redo successful.";
     }
 
     private static String joinFrom(String[] parts, int startIndex) {

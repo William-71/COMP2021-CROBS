@@ -78,6 +78,24 @@ public class UserManager {
     }
 
     /**
+     * Puts back a user removed earlier, keeping its ID.
+     *
+     * @param user user to restore
+     */
+    public void restoreUser(User user) {
+        users.put(user.getUserId(), user);
+    }
+
+    /**
+     * Removes a user without privilege checks.
+     *
+     * @param userId user ID
+     */
+    public void discardUser(String userId) {
+        users.remove(userId);
+    }
+
+    /**
      * REQ2 — admin creates a regular user.
      *
      * @param name user's name

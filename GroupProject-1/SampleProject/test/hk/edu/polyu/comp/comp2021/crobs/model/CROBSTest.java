@@ -157,13 +157,58 @@ class CROBSTest {
         assertEquals("Error: No user is logged in.", crobs.processCommand("changeRole u1 admin"));
     }
 
-    // ---- Dispatch / REQ18 skeleton ----
+    // ---- Dispatch / room+booking wiring ----
 
     @Test
-    void unknownAndUnimplementedCommands() {
+    void unknownCommandStillRejected() {
         assertEquals("Error: Unknown command.", crobs.processCommand("foo"));
-        assertEquals("Error: Command not implemented.", crobs.processCommand("listAllRooms"));
-        assertEquals("Error: Command not implemented.", crobs.processCommand("addRoom lectureTheatre 100 projector"));
+    }
+
+    @Test
+    void wiresRoomBookingSearchAndScheduleCommands() {
+        assertEquals("No rooms.", crobs.processCommand("listAllRooms"));
+        assertEquals("Error: No user is logged in.",
+                crobs.processCommand("addRoom lectureTheatre 100 projector"));
+
+        crobs.processCommand("login u0");
+        assertEquals("Room r1 created.",
+                crobs.processCommand("addRoom lectureTheatre 100 projector,mic"));
+        assertEquals("Room r2 created.",
+                crobs.processCommand("addRoom meetingRoom 12 whiteboard"));
+        assertEquals("Room r1 modified.",
+                crobs.processCommand("modifyRoom r1 capacity 120"));
+        assertTrue(crobs.processCommand("listRoom r1").contains("capacity: 120"));
+        assertTrue(crobs.processCommand("listAllRooms").contains("r1"));
+        assertTrue(crobs.processCommand("listAllRooms").contains("r2"));
+
+        crobs.processCommand("addUser Alice");
+        crobs.processCommand("logout");
+        crobs.processCommand("login u1");
+
+        assertEquals("Booking b1 created.",
+                crobs.processCommand("book r1 2099-01-10 09:00 10:00 team meeting"));
+        assertEquals("Booking b1 modified.",
+                crobs.processCommand("modifyBooking b1 r2 2099-01-11 10:00 11:00 updated purpose"));
+        assertTrue(crobs.processCommand("listBookings").contains("b1"));
+        assertTrue(crobs.processCommand("listBookings").contains("room: r2"));
+
+        // r2 has whiteboard but is booked; r1 lacks whiteboard → no match
+        assertEquals("No rooms.",
+                crobs.processCommand("search 2099-01-11 10:00 11:00 10 whiteboard"));
+        assertTrue(crobs.processCommand("search 2099-01-11 10:00 11:00 10 projector")
+                .contains("r1"));
+
+        String schedule = crobs.processCommand("schedule r2 2099-01-11");
+        assertTrue(schedule.contains("b1"));
+        assertTrue(schedule.contains("user: u1"));
+
+        assertEquals("Booking b1 deleted.", crobs.processCommand("deleteBooking b1"));
+        assertEquals("No bookings.", crobs.processCommand("listBookings"));
+
+        crobs.processCommand("logout");
+        crobs.processCommand("login u0");
+        assertEquals("Room r2 deleted.", crobs.processCommand("deleteRoom r2"));
+        assertEquals("Error: Room not found.", crobs.processCommand("listRoom r2"));
     }
 
     @Test

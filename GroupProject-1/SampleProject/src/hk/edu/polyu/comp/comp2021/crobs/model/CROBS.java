@@ -2,21 +2,24 @@ package hk.edu.polyu.comp.comp2021.crobs.model;
 
 import hk.edu.polyu.comp.comp2021.crobs.manager.BookingManager;
 import hk.edu.polyu.comp.comp2021.crobs.manager.RoomManager;
+import hk.edu.polyu.comp.comp2021.crobs.manager.SearchScheduleManager;
 import hk.edu.polyu.comp.comp2021.crobs.manager.UserManager;
 
 import java.io.InputStream;
 import java.io.PrintStream;
+import java.util.List;
 import java.util.Scanner;
 
 /**
  * Core Crobs model / command dispatcher.
- * Member A implements REQ1–REQ6 and the shared command framework.
+ * Wires UserManager, RoomManager, BookingManager, and SearchScheduleManager to the CLI.
  */
 public class CROBS {
 
     private final UserManager userManager;
     private final RoomManager roomManager;
     private final BookingManager bookingManager;
+    private final SearchScheduleManager searchScheduleManager;
     private final CommandLogger logger;
     private boolean running;
 
@@ -35,6 +38,7 @@ public class CROBS {
         this.userManager = new UserManager();
         this.roomManager = new RoomManager();
         this.bookingManager = new BookingManager(this.roomManager);
+        this.searchScheduleManager = new SearchScheduleManager(this.roomManager, this.bookingManager);
         this.logger = new CommandLogger(htmlPath, txtPath);
         this.running = false;
     }
@@ -49,6 +53,10 @@ public class CROBS {
 
     public BookingManager getBookingManager() {
         return bookingManager;
+    }
+
+    public SearchScheduleManager getSearchScheduleManager() {
+        return searchScheduleManager;
     }
 
     public CommandLogger getLogger() {
@@ -118,18 +126,28 @@ public class CROBS {
                 return handleLogout(parts);
             } else if ("quit".equals(cmd)) {
                 return handleQuit(parts);
-            } else if ("addRoom".equals(cmd)
-                    || "modifyRoom".equals(cmd)
-                    || "deleteRoom".equals(cmd)
-                    || "book".equals(cmd)
-                    || "modifyBooking".equals(cmd)
-                    || "deleteBooking".equals(cmd)
-                    || "search".equals(cmd)
-                    || "schedule".equals(cmd)
-                    || "listRoom".equals(cmd)
-                    || "listAllRooms".equals(cmd)
-                    || "listBookings".equals(cmd)) {
-                return "Error: Command not implemented.";
+            } else if ("addRoom".equals(cmd)) {
+                return handleAddRoom(parts);
+            } else if ("modifyRoom".equals(cmd)) {
+                return handleModifyRoom(parts);
+            } else if ("deleteRoom".equals(cmd)) {
+                return handleDeleteRoom(parts);
+            } else if ("book".equals(cmd)) {
+                return handleBook(parts);
+            } else if ("modifyBooking".equals(cmd)) {
+                return handleModifyBooking(parts);
+            } else if ("deleteBooking".equals(cmd)) {
+                return handleDeleteBooking(parts);
+            } else if ("search".equals(cmd)) {
+                return handleSearch(parts);
+            } else if ("schedule".equals(cmd)) {
+                return handleSchedule(parts);
+            } else if ("listRoom".equals(cmd)) {
+                return handleListRoom(parts);
+            } else if ("listAllRooms".equals(cmd)) {
+                return handleListAllRooms(parts);
+            } else if ("listBookings".equals(cmd)) {
+                return handleListBookings(parts);
             } else {
                 return "Error: Unknown command.";
             }
@@ -190,5 +208,142 @@ public class CROBS {
         }
         running = false;
         return "";
+    }
+
+    // ---- REQ7–REQ9, REQ15–REQ16 (RoomManager) ----
+
+    private String handleAddRoom(String[] parts) {
+        if (parts.length != 4) {
+            return "Error: Invalid arguments.";
+        }
+        userManager.requireAdmin();
+        Room room = roomManager.addRoom(parts[1], parts[2], parts[3]);
+        return "Room " + room.getRoomId() + " created.";
+    }
+
+    private String handleModifyRoom(String[] parts) {
+        if (parts.length != 4) {
+            return "Error: Invalid arguments.";
+        }
+        userManager.requireAdmin();
+        Room room = roomManager.modifyRoom(parts[1], parts[2], parts[3]);
+        return "Room " + room.getRoomId() + " modified.";
+    }
+
+    private String handleDeleteRoom(String[] parts) {
+        if (parts.length != 2) {
+            return "Error: Invalid arguments.";
+        }
+        userManager.requireAdmin();
+        Room room = roomManager.deleteRoom(parts[1]);
+        bookingManager.cancelBookingsByRoom(room.getRoomId());
+        return "Room " + room.getRoomId() + " deleted.";
+    }
+
+    private String handleListRoom(String[] parts) {
+        if (parts.length != 2) {
+            return "Error: Invalid arguments.";
+        }
+        return roomManager.listRoom(parts[1]);
+    }
+
+    private String handleListAllRooms(String[] parts) {
+        if (parts.length != 1) {
+            return "Error: Invalid arguments.";
+        }
+        return roomManager.listAllRooms();
+    }
+
+    // ---- REQ10–REQ12, REQ17 (BookingManager) ----
+
+    private String handleBook(String[] parts) {
+        if (parts.length < 6) {
+            return "Error: Invalid arguments.";
+        }
+        userManager.requireLoggedIn();
+        String purpose = joinFrom(parts, 5);
+        Booking booking = bookingManager.book(
+                parts[1], parts[2], parts[3], parts[4], purpose,
+                userManager.getCurrentUser().getUserId());
+        return "Booking " + booking.getBookingId() + " created.";
+    }
+
+    private String handleModifyBooking(String[] parts) {
+        if (parts.length < 7) {
+            return "Error: Invalid arguments.";
+        }
+        userManager.requireLoggedIn();
+        String purpose = joinFrom(parts, 6);
+        Booking booking = bookingManager.modifyBooking(
+                parts[1], parts[2], parts[3], parts[4], parts[5], purpose,
+                userManager.getCurrentUser().getUserId());
+        return "Booking " + booking.getBookingId() + " modified.";
+    }
+
+    private String handleDeleteBooking(String[] parts) {
+        if (parts.length != 2) {
+            return "Error: Invalid arguments.";
+        }
+        userManager.requireLoggedIn();
+        Booking booking = bookingManager.deleteBooking(
+                parts[1], userManager.getCurrentUser().getUserId());
+        return "Booking " + booking.getBookingId() + " deleted.";
+    }
+
+    private String handleListBookings(String[] parts) {
+        if (parts.length != 1) {
+            return "Error: Invalid arguments.";
+        }
+        userManager.requireLoggedIn();
+        List<Booking> bookings = bookingManager.listBookings(
+                userManager.getCurrentUser().getUserId());
+        if (bookings.isEmpty()) {
+            return "No bookings.";
+        }
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < bookings.size(); i++) {
+            if (i > 0) {
+                sb.append(System.lineSeparator());
+            }
+            Booking booking = bookings.get(i);
+            sb.append(booking.getBookingId())
+                    .append(" | room: ").append(booking.getRoomId())
+                    .append(" | date: ").append(booking.getDate())
+                    .append(" | time: ").append(booking.getStartTime())
+                    .append('-').append(booking.getEndTime())
+                    .append(" | purpose: ").append(booking.getPurpose());
+        }
+        return sb.toString();
+    }
+
+    // ---- REQ13–REQ14 (SearchScheduleManager) ----
+
+    private String handleSearch(String[] parts) {
+        if (parts.length != 6) {
+            return "Error: Invalid arguments.";
+        }
+        List<Room> rooms = searchScheduleManager.search(
+                parts[1], parts[2], parts[3], parts[4], parts[5]);
+        return searchScheduleManager.formatSearchResults(rooms);
+    }
+
+    private String handleSchedule(String[] parts) {
+        if (parts.length != 3) {
+            return "Error: Invalid arguments.";
+        }
+        userManager.requireLoggedIn();
+        List<Booking> bookings = searchScheduleManager.schedule(parts[1], parts[2]);
+        return searchScheduleManager.formatSchedule(bookings, userManager.getCurrentUser());
+    }
+
+    private static String joinFrom(String[] parts, int startIndex) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = startIndex; i < parts.length; i++) {
+            if (i > startIndex) {
+                sb.append(' ');
+            }
+            sb.append(parts[i]);
+        }
+        return sb.toString();
     }
 }

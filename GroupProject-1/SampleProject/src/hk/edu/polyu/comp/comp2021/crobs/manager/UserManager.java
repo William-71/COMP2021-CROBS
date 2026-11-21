@@ -78,6 +78,24 @@ public class UserManager {
     }
 
     /**
+     * Puts back a user removed earlier, keeping its ID.
+     *
+     * @param user user to restore
+     */
+    public void restoreUser(User user) {
+        users.put(user.getUserId(), user);
+    }
+
+    /**
+     * Removes a user without privilege checks.
+     *
+     * @param userId user ID
+     */
+    public void discardUser(String userId) {
+        users.remove(userId);
+    }
+
+    /**
      * REQ2 — admin creates a regular user.
      *
      * @param name user's name
@@ -112,7 +130,7 @@ public class UserManager {
             throw new IllegalStateException("Error: Cannot remove this user.");
         }
         users.remove(targetUserId);
-        if (isLoggedIn() && targetUserId.equals(currentUser.get().getUserId())) {
+        if (isLoggedIn() && targetUserId.equals(getCurrentUser().getUserId())) {
             currentUser = Optional.empty();
         }
         return target;
@@ -179,7 +197,7 @@ public class UserManager {
      */
     public void requireAdmin() {
         requireLoggedIn();
-        if (!currentUser.get().isAdmin()) {
+        if (!getCurrentUser().isAdmin()) {
             throw new IllegalStateException("Error: Access denied.");
         }
     }
@@ -189,7 +207,7 @@ public class UserManager {
      */
     public void requireSuperAdmin() {
         requireLoggedIn();
-        if (!currentUser.get().isSuperAdmin()) {
+        if (!getCurrentUser().isSuperAdmin()) {
             throw new IllegalStateException("Error: Access denied.");
         }
     }

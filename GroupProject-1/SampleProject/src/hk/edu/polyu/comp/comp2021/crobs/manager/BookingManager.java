@@ -123,24 +123,39 @@ public class BookingManager {
      * @return number of cancelled bookings
      */
     public int cancelBookingsByRoom(String roomId) {
+        List<Booking> future = getFutureBookingsByRoom(roomId);
+        for (Booking booking : future) {
+            bookings.remove(booking.getBookingId());
+        }
+        return future.size();
+    }
+
+    /**
+     * @param roomId room ID
+     * @return the room's bookings dated today or later
+     */
+    public List<Booking> getFutureBookingsByRoom(String roomId) {
         if (roomId == null || roomId.trim().isEmpty()) {
             throw new IllegalArgumentException("Error: Invalid arguments.");
         }
-        int removed = 0;
         LocalDate today = LocalDate.now();
-        Iterator<Map.Entry<String, Booking>> it = bookings.entrySet().iterator();
-        while (it.hasNext()) {
-            Map.Entry<String, Booking> entry = it.next();
-            Booking booking = entry.getValue();
-            LocalDate bookingDate = LocalDate.parse(booking.getDate());
+        List<Booking> result = new ArrayList<Booking>();
+        for (Booking booking : bookings.values()) {
             boolean sameRoom = roomId.equals(booking.getRoomId());
-            boolean todayOrFuture = !bookingDate.isBefore(today);
+            boolean todayOrFuture = !LocalDate.parse(booking.getDate()).isBefore(today);
             if (sameRoom && todayOrFuture) {
-                it.remove();
-                removed++;
+                result.add(booking);
             }
         }
-        return removed;
+        return result;
+    }
+
+    /**
+     * @param bookingId booking ID
+     * @return the removed booking, or null if none
+     */
+    public Booking removeBooking(String bookingId) {
+        return bookings.remove(bookingId);
     }
 
     /**

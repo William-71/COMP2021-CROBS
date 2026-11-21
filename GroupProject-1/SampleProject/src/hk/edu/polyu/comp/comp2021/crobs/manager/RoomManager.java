@@ -3,6 +3,8 @@ package hk.edu.polyu.comp.comp2021.crobs.manager;
 import hk.edu.polyu.comp.comp2021.crobs.model.Room;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -58,7 +60,28 @@ public class RoomManager {
      * @return all rooms sorted by room ID
      */
     public List<Room> getAllRooms() {
-        return new ArrayList<Room>(rooms.values());
+        List<Room> list = new ArrayList<Room>(rooms.values());
+        Collections.sort(list, new Comparator<Room>() {
+            @Override
+            public int compare(Room first, Room second) {
+                String a = first.getRoomId();
+                String b = second.getRoomId();
+                if (a.length() != b.length()) {
+                    return a.length() - b.length();
+                }
+                return a.compareTo(b);
+            }
+        });
+        return list;
+    }
+
+    /**
+     * Puts back a room removed earlier, keeping its ID.
+     *
+     * @param room room to restore
+     */
+    public void restoreRoom(Room room) {
+        rooms.put(room.getRoomId(), room);
     }
 
     /**
